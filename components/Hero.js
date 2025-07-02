@@ -3,6 +3,7 @@ import { motion, useAnimation, useTransform } from 'framer-motion';
 import { gsap } from 'gsap';
 import ClientOnlyWrapper from './ClientOnlyWrapper';
 import Image from 'next/image';
+import MobileTitle from './mobile/MobileTitle';
 
 
 const Hero = () => {
@@ -191,7 +192,7 @@ const Hero = () => {
         ></div>
 
         {/* Skyline 3D stratificato con effetto parallasse */}
-        <div className="absolute inset-0 z-5">
+        <div className="absolute inset-0 z-5 min-h-screen">
           <ClientOnlyWrapper>
             <div ref={parallaxRef} className="absolute inset-0 overflow-hidden">
               {/* Sfondo con gradiente */}
@@ -205,7 +206,8 @@ const Hero = () => {
                   // Movimento da sinistra (0°/-180°) a destra (180°), con 0 = -180, 0.5 = 0, 1 = 180
                   left: `${timeOfDay * 100}%`,
                   // Posizione verticale segue un arco con punto più alto al centro (90°)
-                  top: `${80 - Math.sin(timeOfDay * Math.PI) * 60}%`,
+                  // Modifica: su mobile posizione il sole/luna più in alto per illuminare meglio lo skyline
+                  top: `${(isClient && window.innerWidth < 768 ? 60 : 80) - Math.sin(timeOfDay * Math.PI) * 60}%`,
                   width: '80px',
                   height: '80px',
                   borderRadius: '50%',
@@ -485,7 +487,7 @@ const Hero = () => {
                 >
                   {/* Layer 1: Skyline sfondo (lontano, movimento lento) */}
                   <motion.div
-                    className="absolute inset-0 z-1 flex items-end justify-center"
+                    className="absolute inset-0 z-1 flex items-center justify-center md:items-end"
                     style={{
                       x: isClient ? mousePosition.x * -10 : 0,
                       y: isClient ? mousePosition.y * -5 : 0,
@@ -497,7 +499,7 @@ const Hero = () => {
                     <img 
                       src="/images/93bf1e09-7df4-40f2-91f1-d7a186cbdaf8.png"
                       alt="Skyline Background Layer"
-                      className="max-h-screen w-auto opacity-80"
+                      className="h-auto w-full md:w-auto md:max-h-screen object-contain md:object-bottom opacity-80 transform md:translate-y-0 -translate-y-4"
                     />
                     {/* Nebbia distante che separa i layer */}
                     <div className="absolute inset-0 bg-black/30"></div>
@@ -505,7 +507,7 @@ const Hero = () => {
                   
                   {/* Layer 2: Skyline medio (movimento medio) */}
                   <motion.div
-                    className="absolute inset-0 z-2 flex items-end justify-center"
+                    className="absolute inset-0 z-2 flex items-center justify-center md:items-end"
                     style={{
                       x: isClient ? mousePosition.x * -20 : 0,
                       y: isClient ? mousePosition.y * -10 : 0,
@@ -549,7 +551,7 @@ const Hero = () => {
                     <img 
                       src="/images/93bf1e09-7df4-40f2-91f1-d7a186cbdaf8.png"
                       alt="Skyline Middle Layer"
-                      className="max-h-screen w-auto opacity-90"
+                      className="h-auto w-full md:w-auto md:max-h-screen object-contain md:object-bottom opacity-90 transform md:translate-y-0 -translate-y-4"
                     />
                     {/* Leggera foschia tra layer */}
                     <div className="absolute inset-0 bg-black/15"></div>
@@ -557,7 +559,7 @@ const Hero = () => {
                   
                   {/* Layer 3: Skyline principale in primo piano (movimento rapido) */}
                   <motion.div
-                    className="absolute inset-0 z-3 flex items-end justify-center"
+                    className="absolute inset-0 z-3 flex items-center justify-center md:items-end"
                     style={{
                       x: isClient ? mousePosition.x * -30 : 0,
                       y: isClient ? mousePosition.y * -15 : 0,
@@ -568,7 +570,7 @@ const Hero = () => {
                     <motion.img 
                       src="/images/93bf1e09-7df4-40f2-91f1-d7a186cbdaf8.png"
                       alt="Skyline Front Layer"
-                      className="max-h-screen w-auto relative"
+                      className="h-auto w-full md:w-auto md:max-h-screen object-contain md:object-bottom relative transform md:translate-y-0 -translate-y-4"
                       style={{
                         filter: (() => {
                           // Filtro sincronizzato con la posizione del corpo luminoso
@@ -828,79 +830,91 @@ const Hero = () => {
       </div>
       
       <div className="relative z-20 flex flex-col md:flex-row items-center justify-between w-full max-w-7xl mx-auto px-4">
-        {/* Testo e CTA */}
-        <div ref={textRef} className="md:w-1/2 text-center md:text-left mb-12 md:mb-0">
-          <motion.h1 
-            className="animate-text text-4xl md:text-6xl lg:text-7xl font-serif font-bold mb-8"
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 1.2, delay: 0.3 }}
-          >
-            <span className="block relative z-10">
-              <span className="text-white drop-shadow-[0_5px_15px_rgba(255,255,255,0.5)] relative z-10">Eccellenza in</span>
-              <span className="absolute top-0 left-1 text-darkgold/30 blur-[2px] z-0">Eccellenza in</span>
-            </span>
-            <span className="block mt-2 relative z-10">
-              <span className="bg-clip-text text-transparent bg-gradient-to-r from-primary via-highlight to-primary text-shadow-xl">
-                Ogni Dettaglio
+        {/* Contenitore per mobile con ordine personalizzato */}
+        <div className="flex flex-col w-full md:hidden mb-6">
+          {/* Solo titolo principale su mobile sopra immagine */}
+          <MobileTitle />
+        </div>
+
+        {/* Testo e CTA - versione desktop e mobile sotto */}
+        <div ref={textRef} className="md:w-1/2 text-center md:text-left mb-12 md:mb-0 hidden md:block">
+          <ClientOnlyWrapper>
+            <motion.h1 
+              className="animate-text text-4xl md:text-6xl lg:text-7xl font-serif font-bold mb-8"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 1.2, delay: 0.3 }}
+            >
+              <span className="block relative z-10">
+                <span className="text-white drop-shadow-[0_5px_15px_rgba(255,255,255,0.5)] relative z-10">Eccellenza in</span>
+                <span className="absolute top-0 left-1 text-darkgold/30 blur-[2px] z-0">Eccellenza in</span>
               </span>
-              <span className="absolute -inset-2 bg-gradient-to-r from-primary/0 via-highlight/20 to-primary/0 blur-xl -z-10 opacity-50"></span>
-            </span>
-          </motion.h1>
-          
-          <motion.p 
-            className="animate-text text-lg md:text-xl mb-10 max-w-xl text-white leading-relaxed"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ duration: 1.0, delay: 1.0 }}
-          >
-            <span className="backdrop-blur-md px-4 py-3 bg-black/30 border-l-2 border-highlight/80 shadow-[0_0_15px_rgba(221,167,79,0.3)] inline-block rounded-r-md">
-              Scopri la collezione esclusiva di Borgonuovo Gioielli 10, 
-              dove ogni creazione è un capolavoro di artigianato e raffinatezza.
-            </span>
-          </motion.p>
-          
-          <motion.div 
-            className="animate-text"
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8, delay: 0.8 }}
-          >
-            <button className="relative overflow-hidden bg-gradient-to-r from-darkgold via-primary to-highlight text-secondary font-semibold py-3 px-10 rounded-md shadow-[0_4px_20px_rgba(184,134,11,0.5)] transition-all duration-300 transform hover:scale-105 group">
-              <span className="relative z-10">Esplora la Collezione</span>
-              {/* Effetto glow sul bottone */}
-              <span className="absolute inset-0 bg-gradient-to-r from-highlight via-primary to-highlight bg-[length:200%_100%] animate-shimmer"></span>
-              {/* Effetto particelle sul bottone */}
-              <span className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-1000">
-                {buttonParticles.map((particle) => (
-                  <span 
-                    key={particle.id}
-                    className="absolute w-1 h-1 bg-white rounded-full animate-particle"
-                    style={{
-                      top: `${particle.top}%`,
-                      left: `${particle.left}%`,
-                      animationDelay: `${particle.animationDelay}s`,
-                      animationDuration: `${particle.animationDuration}s`,
-                    }}
-                  />
-                ))}
+              <span className="block mt-2 relative z-10">
+                <span className="bg-clip-text text-transparent bg-gradient-to-r from-primary via-highlight to-primary text-shadow-xl">
+                  Ogni Dettaglio
+                </span>
+                <span className="absolute -inset-2 bg-gradient-to-r from-primary/0 via-highlight/20 to-primary/0 blur-xl -z-10 opacity-50"></span>
               </span>
-            </button>
-          </motion.div>
+            </motion.h1>
+          </ClientOnlyWrapper>
+
+          <ClientOnlyWrapper>
+            <motion.p 
+              className="animate-text text-lg md:text-xl mb-10 max-w-xl text-white leading-relaxed hidden md:inline-block"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ duration: 1.0, delay: 1.0 }}
+            >
+              <span className="backdrop-blur-md px-4 py-3 bg-black/30 border-l-2 border-highlight/80 shadow-[0_0_15px_rgba(221,167,79,0.3)] inline-block rounded-r-md">
+                Scopri la collezione esclusiva di Borgonuovo Gioielli 10, 
+                dove ogni creazione è un capolavoro di artigianato e raffinatezza.
+              </span>
+            </motion.p>
+          </ClientOnlyWrapper>
+          
+          <ClientOnlyWrapper>
+            <motion.div 
+              className="animate-text hidden md:block"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.8, delay: 0.8 }}
+            >
+              <button className="relative overflow-hidden bg-gradient-to-r from-darkgold via-primary to-highlight text-secondary font-semibold py-3 px-10 rounded-md shadow-[0_4px_20px_rgba(184,134,11,0.5)] transition-all duration-300 transform hover:scale-105 group">
+                <span className="relative z-10">Esplora la Collezione</span>
+                {/* Effetto glow sul bottone */}
+                <span className="absolute inset-0 bg-gradient-to-r from-highlight via-primary to-highlight bg-[length:200%_100%] animate-shimmer"></span>
+                {/* Effetto particelle sul bottone */}
+                <span className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-1000">
+                  {buttonParticles.map((particle) => (
+                    <span 
+                      key={particle.id}
+                      className="absolute w-1 h-1 bg-white rounded-full animate-particle"
+                      style={{
+                        top: `${particle.top}%`,
+                        left: `${particle.left}%`,
+                        animationDelay: `${particle.animationDelay}s`,
+                        animationDuration: `${particle.animationDuration}s`,
+                      }}
+                    />
+                  ))}
+                </span>
+              </button>
+            </motion.div>
+          </ClientOnlyWrapper>
         </div>
         
         {/* Area per immagine luxury brand */}
         <motion.div 
-          className="md:w-1/2 h[50px] md:h-[100px] relative overflow-hidden rounded-xl glass-effect"
+          className="md:w-1/2 h[50px] md:h-[100px] relative overflow-hidden rounded-xl md:glass-effect"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ delay: 0.5, duration: 1.2 }}
         >
-          <div className="absolute inset-0 bg-gradient-to-tr from-primary/20 via-transparent to-highlight/10"></div>
+          {/* Rimosso il div con gradiente che causava l'ombra */}
           
-          {/* Logo luminoso e animazione particelle */}
-          <div className="absolute inset-0 flex items-center justify-center overflow-hidden">
-            {/* Effetto aura dorata */}
+          {/* Logo luminoso e animazione particelle - visibile solo su desktop */}
+          <div className="absolute inset-0 hidden md:flex items-center justify-center overflow-hidden">
+            {/* Effetto aura dorata - visibile solo su desktop */}
             <div className="w-48 h-48 rounded-full bg-gradient-to-tr from-primary to-highlight opacity-30 blur-2xl animate-pulse-slow"></div>
             
             {/* Logo brand in evidenza */}
@@ -910,13 +924,25 @@ const Hero = () => {
               transition={{ delay: 1.2, duration: 1.5 }}
               className="relative z-10 text-center"
             >
-              <div className="text-4xl font-serif font-bold text-white mb-3 drop-shadow-[0_0_8px_rgba(221,167,79,0.85)] filter-none relative" style={{ textShadow: '0 0 7px rgba(221,167,79,0.7), 0 0 10px rgba(221,167,79,0.5)' }}>
+              <div className="text-4xl font-serif font-bold text-white mb-3 drop-shadow-[0_0_8px_rgba(221,167,79,0.85)] filter-none relative hidden md:block" style={{ textShadow: '0 0 7px rgba(221,167,79,0.7), 0 0 10px rgba(221,167,79,0.5)' }}>
                 Borgonuovo
                 <span className="luxury-gold"> 10</span>
               </div>
-              <div className="h-0.5 w-32 mx-auto bg-gradient-to-r from-transparent via-primary to-transparent mb-3"></div>
-              <div className="text-sm text-accent tracking-widest">ALTA GIOIELLERIA</div>
+              <div className="h-0.5 w-32 mx-auto bg-gradient-to-r from-transparent via-primary to-transparent mb-3 hidden md:block"></div>
+              <div className="text-sm text-accent tracking-widest hidden md:block">ALTA GIOIELLERIA</div>
             </motion.div>
+          </div>
+          
+          {/* Contenitore per il pulsante sotto l'immagine solo su mobile */}
+          <div className="md:hidden w-full mt-32 flex justify-center">
+            <a 
+              href="/collezione" 
+              className="bg-gradient-to-r from-[#B8860B] to-[#DAA520] text-black 
+                font-semibold py-3 px-10 rounded-md 
+                text-lg"
+            >
+              Esplora la Collezione
+            </a>
           </div>
           
           {/* Particelle dorate fluttuanti */}
